@@ -24,67 +24,84 @@ var DataList = React.createClass({
   getInitialState: function() {
     return {data: {
       "navigation": {
-        "courseOverGroundMagnetic": null,
-        "speedOverGround": null,
+        "courseOverGroundTrue":{"value": null},
+        "speedOverGround": {"value": null},
         "position": {
-          "latitude": null,
-          "longitiude": null
+          "latitude": {"value": null},
+          "longitude": {"value": null}
         }
       },
-      "environmental": {
+      "environment": {
         "wind": {
-          "directionApparent": null,
-          "speedApparent": null
-        },
-        "depthBelowKeel": {
-          "value": null
+          "directionApparent": {"value": null},
+			"directionTrue": {"value": null},
+			"speedTrue": {"value": null},
+          "speedApparent": {"value": null}
         }
       }
     }};
   },
   componentDidMount: function() {
-    var socket = io.connect(this.props.url);
+	  console.log("Loading socket..");
+	  var location = "ws://"+window.location.hostname+":9292/signalk/stream";
+			//alert(location);
+			
+	var socket = new WebSocket(location);
+	socket.binaryType = "arraybuffer";
+   // var socket = io.connect(this.props.url);
     var that = this;
-    socket.on('signalk', function(data) {
-      var s = data.self;
-      that.setState({data: data.vessels[s]});
-    });
+    //socket.on('signalk', function(data) {
+	  socket.onopen = function() {
+			};
+	  socket.onmessage = function(m) {
+		  var mObj = JSON.parse(m.data);
+		  //console.log(JSON.stringify(mObj));
+		  var s = mObj.vessels.self;//data.self;
+			console.log(s);
+		  that.setState({data: s});
+		};
+	  socket.onclose = function() {
+				socket = null;
+			};
+		socket.onerror = function(error) {
+			//popped = true;
+			alert('Cannot connect to Freeboard server:'+JSON.stringify(error));
+			//popped=false;
+		};
   },
   render: function() {
+	  console.log("Loading page..");
     var loc = [
-      {name: "Latitude", value: this.state.data.navigation.position.latitude,
+      {name: "Latitude", value: this.state.data.navigation.position.latitude.value,
        unit: "\u00B0"},
-      {name: "Longitude", value: this.state.data.navigation.position.longitude,
+      {name: "Longitude", value: this.state.data.navigation.position.longitude.value,
        unit: "\u00B0"}
     ];
 
     var cog = [
-      {value: this.state.data.navigation.courseOverGroundMagnetic,
+      {value: this.state.data.navigation.courseOverGroundTrue.value,
        unit: "\u00B0"}
     ];
 
     var sog = [
-      {value: this.state.data.navigation.speedOverGround,
+      {value: this.state.data.navigation.speedOverGround.value,
        unit: "m/s"}
     ];
 
-    var dbk = [
-      {value: this.state.data.environmental.depthBelowKeel.value,
-        unit: "m"}
-    ];
+   
 
     var twd = [
-      {name: "Angle", value: this.state.data.environmental.wind.directionTrue,
+      {name: "Angle", value: this.state.data.environment.wind.directionTrue.value,
        unit: "\u00B0"},
-      {name: "Speed", value: this.state.data.environmental.wind.speedTrue,
+      {name: "Speed", value: this.state.data.environment.wind.speedTrue.value,
        unit: "m/s"}
     ];
 
     var awd = [
       {name: "Angle",
-       value: this.state.data.environmental.wind.directionApparent,
+       value: this.state.data.environment.wind.directionApparent.value,
        unit: "\u00B0"},
-      {name: "Speed", value: this.state.data.environmental.wind.speedApparent,
+      {name: "Speed", value: this.state.data.environment.wind.speedApparent.value,
        unit: "m/s"}
     ];
 
@@ -95,7 +112,7 @@ var DataList = React.createClass({
           <DataBox name="Location" data={loc} />
           <DataBox name="Course Over Ground" data={cog} />
           <DataBox name="Speed Over Ground" data={sog} />
-          <DataBox name="Depth Below Keel" data={dbk} />
+         
           <DataBox name="True Wind" data={twd} />
           <DataBox name="Apparent Wind" data={awd} />
         </div>
@@ -123,7 +140,13 @@ var DataBox = React.createClass({
 var DataElement = React.createClass({
   render: function() {
     var v = this.props.value || 0;
-    v = v.toFixed(2);
+	 
+	if(this.props.name === 'Latitude' || this.props.name === 'Longitude') {
+      v = v.toFixed(5);
+    }else{
+		v = v.toFixed(2);
+	}
+    
     if(this.props.name) {
       this.props.name += ":";
     }
@@ -137,7 +160,7 @@ var DataElement = React.createClass({
 });
 
 React.renderComponent(
-    <DataList url={"wss://" + location.hostname + ":3000/signalk/stream"} />,
+    <DataList url={"ws://" + location.hostname + ":9292/signalk/stream"} />,
     document.getElementById('container')
 );
 
