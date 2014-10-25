@@ -24,6 +24,7 @@ var DataList = React.createClass({
   getInitialState: function() {
     return {data: {
       "navigation": {
+		 "courseOverGroundMagnetic":{"value": null},
         "courseOverGroundTrue":{"value": null},
         "speedOverGround": {"value": null},
         "position": {
@@ -79,7 +80,9 @@ var DataList = React.createClass({
     ];
 
     var cog = [
-      {value: this.state.data.navigation.courseOverGroundTrue.value,
+		{name:"Magnetic", value: this.state.data.navigation.courseOverGroundMagnetic.value,
+       unit: "\u00B0"},
+      {name:"True", value: this.state.data.navigation.courseOverGroundTrue.value,
        unit: "\u00B0"}
     ];
 
@@ -110,6 +113,7 @@ var DataList = React.createClass({
         <h1>Signal K React Demo</h1>
         <div className="dataList">
           <DataBox name="Location" data={loc} />
+	
           <DataBox name="Course Over Ground" data={cog} />
           <DataBox name="Speed Over Ground" data={sog} />
          
