@@ -59,6 +59,9 @@ var DataList = React.createClass({
         }
       },
       "environment": {
+		"depth":{
+		  	"belowTransducer": {"value": null}
+			},
         "wind": {
           "directionApparent": {"value": null},
 			"directionTrue": {"value": null},
@@ -120,7 +123,10 @@ var DataList = React.createClass({
        unit: "knts"}
     ];
 
-   
+   var dbk = [
+	 {value: this.state.data.environment.depth.belowTransducer.value,
+	 unit: "m"}
+	];
 
     var twd = [
       {name: "Angle", value: this.state.data.environment.wind.directionTrue.value,
@@ -145,7 +151,7 @@ var DataList = React.createClass({
 	
           <DataBox name="Course Over Ground" data={cog} />
           <DataBox name="Speed Over Ground" data={sog} />
-         
+         <DataBox name="Depth Below Transducer" data={dbk} />
           <DataBox name="True Wind" data={twd} />
           <DataBox name="Apparent Wind" data={awd} />
         </div>
